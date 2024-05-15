@@ -55,6 +55,9 @@ union dirent_storage {
 
 #define FORMAT_BYTES_MAX 8
 
+#define GLOB_BRACE	 (1 << 10)/* Expand "{a,b}" to "a" "b".  */
+#define	IPTOS_LOWCOST   0x02
+
 #define ANSI_HIGHLIGHT_ON "\x1B[1;39m"
 #define ANSI_RED_ON "\x1B[31m"
 #define ANSI_HIGHLIGHT_RED_ON "\x1B[1;31m"
@@ -356,7 +359,7 @@ int rm_rf_dangerous(const char *path, bool only_dirs, bool delete_root, bool hon
 
 int pipe_eof(int fd);
 
-cpu_set_t* cpu_set_malloc(unsigned *ncpus);
+//cpu_set_t* cpu_set_malloc(unsigned *ncpus);
 
 int status_vprintf(const char *status, bool ellipse, bool ephemeral, const char *format, va_list ap);
 int status_printf(const char *status, bool ellipse, bool ephemeral, const char *format, ...);

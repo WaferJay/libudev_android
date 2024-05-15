@@ -24,6 +24,8 @@
 #include "util.h"
 #include "strv.h"
 
+#include "android.h"
+
 int write_one_line_file(const char *fn, const char *line) {
         _cleanup_fclose_ FILE *f = NULL;
 

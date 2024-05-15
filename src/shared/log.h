@@ -104,12 +104,12 @@ int log_metav_object(
                 const char *format,
                 va_list ap);
 
-int log_struct_internal(
-                int level,
-                const char *file,
-                int line,
-                const char *func,
-                const char *format, ...) _sentinel_;
+//int log_struct_internal(
+//                int level,
+//                const char *file,
+//                int line,
+//                const char *func,
+//                const char *format, ...) _sentinel_;
 
 int log_oom_internal(
                 const char *file,

@@ -27,13 +27,15 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <stddef.h>
-#include <printf.h>
+//#include <printf.h>
 
 #include "log.h"
 #include "util.h"
 #include "missing.h"
 #include "macro.h"
 #include "socket-util.h"
+
+#include "android.h"
 
 #define SNDBUF_SIZE (8*1024*1024)
 
@@ -728,124 +730,124 @@ int log_oom_internal(const char *file, int line, const char *func) {
         return -ENOMEM;
 }
 
-int log_struct_internal(
-                int level,
-                const char *file,
-                int line,
-                const char *func,
-                const char *format, ...) {
-
-        int saved_errno;
-        va_list ap;
-        int r;
-
-        if (_likely_(LOG_PRI(level) > log_max_level))
-                return 0;
-
-        if (log_target == LOG_TARGET_NULL)
-                return 0;
-
-        if ((level & LOG_FACMASK) == 0)
-                level = log_facility | LOG_PRI(level);
-
-        saved_errno = errno;
-
-        if ((log_target == LOG_TARGET_AUTO ||
-             log_target == LOG_TARGET_JOURNAL_OR_KMSG ||
-             log_target == LOG_TARGET_JOURNAL) &&
-            journal_fd >= 0) {
-
-                char header[LINE_MAX];
-                struct iovec iovec[17] = {{0}};
-                unsigned n = 0, i;
-                struct msghdr mh;
-                static const char nl = '\n';
-
-                /* If the journal is available do structured logging */
-                log_do_header(header, sizeof(header), level,
-                              file, line, func, NULL, NULL);
-                IOVEC_SET_STRING(iovec[n++], header);
-
-                va_start(ap, format);
-                while (format && n + 1 < ELEMENTSOF(iovec)) {
-                        char *buf;
-                        va_list aq;
-
-                        /* We need to copy the va_list structure,
-                         * since vasprintf() leaves it afterwards at
-                         * an undefined location */
-
-                        va_copy(aq, ap);
-                        if (vasprintf(&buf, format, aq) < 0) {
-                                va_end(aq);
-                                r = -ENOMEM;
-                                goto finish;
-                        }
-                        va_end(aq);
-
-                        /* Now, jump enough ahead, so that we point to
-                         * the next format string */
-                        VA_FORMAT_ADVANCE(format, ap);
-
-                        IOVEC_SET_STRING(iovec[n++], buf);
-
-                        iovec[n].iov_base = (char*) &nl;
-                        iovec[n].iov_len = 1;
-                        n++;
-
-                        format = va_arg(ap, char *);
-                }
-
-                zero(mh);
-                mh.msg_iov = iovec;
-                mh.msg_iovlen = n;
-
-                if (sendmsg(journal_fd, &mh, MSG_NOSIGNAL) < 0)
-                        r = -errno;
-                else
-                        r = 1;
-
-        finish:
-                va_end(ap);
-                for (i = 1; i < n; i += 2)
-                        free(iovec[i].iov_base);
-
-        } else {
-                char buf[LINE_MAX];
-                bool found = false;
-
-                /* Fallback if journal logging is not available */
-
-                va_start(ap, format);
-                while (format) {
-                        va_list aq;
-
-                        va_copy(aq, ap);
-                        vsnprintf(buf, sizeof(buf), format, aq);
-                        va_end(aq);
-                        char_array_0(buf);
-
-                        if (startswith(buf, "MESSAGE=")) {
-                                found = true;
-                                break;
-                        }
-
-                        VA_FORMAT_ADVANCE(format, ap);
-
-                        format = va_arg(ap, char *);
-                }
-                va_end(ap);
-
-                if (found)
-                        r = log_dispatch(level, file, line, func,
-                                         NULL, NULL, buf + 8);
-                else
-                        r = -EINVAL;
-        }
-
-        errno = saved_errno;
-        return r;
-}
+//int log_struct_internal(
+//                int level,
+//                const char *file,
+//                int line,
+//                const char *func,
+//                const char *format, ...) {
+//
+//        int saved_errno;
+//        va_list ap;
+//        int r;
+//
+//        if (_likely_(LOG_PRI(level) > log_max_level))
+//                return 0;
+//
+//        if (log_target == LOG_TARGET_NULL)
+//                return 0;
+//
+//        if ((level & LOG_FACMASK) == 0)
+//                level = log_facility | LOG_PRI(level);
+//
+//        saved_errno = errno;
+//
+//        if ((log_target == LOG_TARGET_AUTO ||
+//             log_target == LOG_TARGET_JOURNAL_OR_KMSG ||
+//             log_target == LOG_TARGET_JOURNAL) &&
+//            journal_fd >= 0) {
+//
+//                char header[LINE_MAX];
+//                struct iovec iovec[17] = {{0}};
+//                unsigned n = 0, i;
+//                struct msghdr mh;
+//                static const char nl = '\n';
+//
+//                /* If the journal is available do structured logging */
+//                log_do_header(header, sizeof(header), level,
+//                              file, line, func, NULL, NULL);
+//                IOVEC_SET_STRING(iovec[n++], header);
+//
+//                va_start(ap, format);
+//                while (format && n + 1 < ELEMENTSOF(iovec)) {
+//                        char *buf;
+//                        va_list aq;
+//
+//                        /* We need to copy the va_list structure,
+//                         * since vasprintf() leaves it afterwards at
+//                         * an undefined location */
+//
+//                        va_copy(aq, ap);
+//                        if (vasprintf(&buf, format, aq) < 0) {
+//                                va_end(aq);
+//                                r = -ENOMEM;
+//                                goto finish;
+//                        }
+//                        va_end(aq);
+//
+//                        /* Now, jump enough ahead, so that we point to
+//                         * the next format string */
+//                        VA_FORMAT_ADVANCE(format, ap);
+//
+//                        IOVEC_SET_STRING(iovec[n++], buf);
+//
+//                        iovec[n].iov_base = (char*) &nl;
+//                        iovec[n].iov_len = 1;
+//                        n++;
+//
+//                        format = va_arg(ap, char *);
+//                }
+//
+//                zero(mh);
+//                mh.msg_iov = iovec;
+//                mh.msg_iovlen = n;
+//
+//                if (sendmsg(journal_fd, &mh, MSG_NOSIGNAL) < 0)
+//                        r = -errno;
+//                else
+//                        r = 1;
+//
+//        finish:
+//                va_end(ap);
+//                for (i = 1; i < n; i += 2)
+//                        free(iovec[i].iov_base);
+//
+//        } else {
+//                char buf[LINE_MAX];
+//                bool found = false;
+//
+//                /* Fallback if journal logging is not available */
+//
+//                va_start(ap, format);
+//                while (format) {
+//                        va_list aq;
+//
+//                        va_copy(aq, ap);
+//                        vsnprintf(buf, sizeof(buf), format, aq);
+//                        va_end(aq);
+//                        char_array_0(buf);
+//
+//                        if (startswith(buf, "MESSAGE=")) {
+//                                found = true;
+//                                break;
+//                        }
+//
+//                        VA_FORMAT_ADVANCE(format, ap);
+//
+//                        format = va_arg(ap, char *);
+//                }
+//                va_end(ap);
+//
+//                if (found)
+//                        r = log_dispatch(level, file, line, func,
+//                                         NULL, NULL, buf + 8);
+//                else
+//                        r = -EINVAL;
+//        }
+//
+//        errno = saved_errno;
+//        return r;
+//}
 
 int log_set_target_from_string(const char *e) {
         LogTarget t;

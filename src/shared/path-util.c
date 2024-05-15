@@ -37,6 +37,8 @@
 #include "path-util.h"
 #include "missing.h"
 
+#include "android.h"
+
 bool path_is_absolute(const char *p) {
         return p[0] == '/';
 }

@@ -30,6 +30,8 @@
 #include "label.h"
 #include "util.h"
 
+#include "android.h"
+
 int mkdir_label(const char *path, mode_t mode) {
         return label_mkdir(path, mode, true);
 }

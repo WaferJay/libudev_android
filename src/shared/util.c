@@ -55,6 +55,7 @@
 #include <grp.h>
 #include <sys/mman.h>
 #include <sys/vfs.h>
+#include <sys/sysmacros.h>
 #include <linux/magic.h>
 #include <limits.h>
 #include <langinfo.h>
@@ -72,6 +73,8 @@
 #include "hashmap.h"
 #include "env-util.h"
 #include "fileio.h"
+
+#include "android.h"
 
 int saved_argc = 0;
 char **saved_argv = NULL;
@@ -2862,33 +2865,33 @@ int fchmod_and_fchown(int fd, mode_t mode, uid_t uid, gid_t gid) {
         return 0;
 }
 
-cpu_set_t* cpu_set_malloc(unsigned *ncpus) {
-        cpu_set_t *r;
-        unsigned n = 1024;
-
-        /* Allocates the cpuset in the right size */
-
-        for (;;) {
-                if (!(r = CPU_ALLOC(n)))
-                        return NULL;
-
-                if (sched_getaffinity(0, CPU_ALLOC_SIZE(n), r) >= 0) {
-                        CPU_ZERO_S(CPU_ALLOC_SIZE(n), r);
-
-                        if (ncpus)
-                                *ncpus = n;
-
-                        return r;
-                }
-
-                CPU_FREE(r);
-
-                if (errno != EINVAL)
-                        return NULL;
-
-                n *= 2;
-        }
-}
+//cpu_set_t* cpu_set_malloc(unsigned *ncpus) {
+//        cpu_set_t *r;
+//        unsigned n = 1024;
+//
+//        /* Allocates the cpuset in the right size */
+//
+//        for (;;) {
+//                if (!(r = CPU_ALLOC(n)))
+//                        return NULL;
+//
+//                if (sched_getaffinity(0, CPU_ALLOC_SIZE(n), r) >= 0) {
+//                        CPU_ZERO_S(CPU_ALLOC_SIZE(n), r);
+//
+//                        if (ncpus)
+//                                *ncpus = n;
+//
+//                        return r;
+//                }
+//
+//                CPU_FREE(r);
+//
+//                if (errno != EINVAL)
+//                        return NULL;
+//
+//                n *= 2;
+//        }
+//}
 
 int status_vprintf(const char *status, bool ellipse, bool ephemeral, const char *format, va_list ap) {
         static const char status_indent[] = "         "; /* "[" STATUS "] " */

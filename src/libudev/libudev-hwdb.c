@@ -31,6 +31,8 @@
 #include "libudev-private.h"
 #include "libudev-hwdb-def.h"
 
+#include "android.h"
+
 /**
  * SECTION:libudev-hwdb
  * @short_description: retrieve properties from the hardware database
